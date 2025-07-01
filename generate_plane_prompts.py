@@ -91,7 +91,18 @@ def generate_plane_set(
             torch.save(plane_noise, file_path)
             print(f"  Saved plane sample: {filename}")
 
-    print(f"\nSuccessfully saved plane noise files to '{output_dir}'.")
+    print(f"Successfully saved plane noise files to '{output_dir}'.")
+
+    # Save linspace values
+    linspace_data = {
+        "linspace_0": linspace_0,
+        "linspace_1": linspace_1
+    }
+    # linspace_path = os.path.join(output_dir, "linspace_values.pt")
+    linspace_path = "linspace_values.pt"
+    torch.save(linspace_data, linspace_path)
+    print(f"Saved linspace values to {linspace_path}")
+
     print("--- Generation Complete ---")
 
 

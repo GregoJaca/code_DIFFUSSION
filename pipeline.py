@@ -24,6 +24,8 @@ def visualize_classifications(
     output_dir: str,
     results_dir: str,
     colors: list[tuple[int, int, int]],
+    linspace_0: torch.Tensor,
+    linspace_1: torch.Tensor,
 ):
     print("\n--- Visualizing Classifications ---")
     classifications_plane_path = os.path.join(output_dir, "classifications_plane.pt")
@@ -40,10 +42,11 @@ def visualize_classifications(
     cmap = ListedColormap(norm_colors)
 
     plt.figure(figsize=(num_x, num_y))
-    plt.imshow(classifications_plane.T, cmap=cmap, origin='lower', extent=[0, num_x, 0, num_y])
+    plt.imshow(classifications_plane.T, cmap=cmap, origin='lower', 
+               extent=[linspace_0.min(), linspace_0.max(), linspace_1.min(), linspace_1.max()])
     
-    plt.xticks(range(num_x))
-    plt.yticks(range(num_y))
+    plt.xticks(linspace_0.tolist())
+    plt.yticks(linspace_1.tolist())
     plt.xlabel("Direction 0")
     plt.ylabel("Direction 1")
     plt.title("Classification Plane Visualization")
@@ -139,11 +142,20 @@ def main():
     run_command(classify_cmd, "Classifying Tensors")
 
     # Step 5: Visualize classifications
+    # linspace_path = os.path.join(system_config.INPUT_DIR, "linspace_values.pt")
+    linspace_path = "linspace_values.pt"
+    if not os.path.exists(linspace_path):
+        print(f"Error: Linspace values not found at {linspace_path}")
+        exit(1)
+    linspace_data = torch.load(linspace_path)
+
     visualize_classifications(
         num_prompts_per_direction=tuple(args.num_prompts_per_direction),
         output_dir=f"{system_config.OUTPUT_DIR}/final_tensors",
         results_dir=args.results_dir,
         colors=system_config.CLASSIFICATION_COLORS,
+        linspace_0=linspace_data["linspace_0"],
+        linspace_1=linspace_data["linspace_1"],
     )
 
 if __name__ == "__main__":
