@@ -1,14 +1,12 @@
 # extraction_system.py
 """Core components for model loading, state extraction, and processing."""
-import os
 import torch
 import logging
 from typing import List, Dict, Tuple
 from diffusers import DDPMPipeline, DDPMScheduler, UNet2DModel
-from config import generation_config # Import generation_config
+from config import generation_config, system_config # Import generation_config and system_config
 
-# Setup basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Setup basic logging (configured by main.py)
 
 class ForwardHook:
     """A hook to capture the output of a specific module."""
@@ -95,13 +93,14 @@ class StateExtractor:
         self._attach_hooks()
 
         try:
-            for t in self.scheduler.timesteps:
+            for i, t in enumerate(self.scheduler.timesteps):
                 with torch.no_grad():
                     # Predict noise
                     noise_pred = self.model(image, t).sample
                     # Compute previous image state
                     image = self.scheduler.step(noise_pred, t, image).prev_sample
                 sequence_x.append(image.cpu().clone())
+                logging.debug(f"Timestep {i}: noise_pred_mean={noise_pred.mean():.6f}, noise_pred_std={noise_pred.std():.6f}, image_mean={image.mean():.6f}, image_std={image.std():.6f}")
         finally:
             # Ensure hooks are always removed
             first_layer_hook = self.hooks[self.first_layer_name][0]
@@ -152,11 +151,12 @@ class StateExtractor:
         image = initial_noise.to(self.device)
 
         with torch.no_grad():
-            for t in self.scheduler.timesteps:
+            for i, t in enumerate(self.scheduler.timesteps):
                 # Predict noise
                 noise_pred = self.model(image, t).sample
                 # Compute previous image state
                 image = self.scheduler.step(noise_pred, t, image).prev_sample
+                logging.debug(f"Timestep {i}: noise_pred_mean={noise_pred.mean():.6f}, noise_pred_std={noise_pred.std():.6f}, image_mean={image.mean():.6f}, image_std={image.std():.6f}")
         
         # Clean GPU memory
         del noise_pred

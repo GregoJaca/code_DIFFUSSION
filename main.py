@@ -8,6 +8,9 @@ import logging
 from tqdm import tqdm
 from typing import List
 
+import random
+import numpy as np
+
 from config import system_config, model_config, inference_config
 from extraction_system import StateExtractor
 
@@ -51,16 +54,20 @@ def main(args):
     else:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    torch.manual_seed(system_config.SEED)
-    
+    import random
+    import numpy as np
+    random.seed(system_config.SEED)
+    np.random.seed(system_config.SEED)
     if system_config.DEVICE == "cuda":
         if not torch.cuda.is_available():
             logging.warning("CUDA not available. Falling back to CPU.")
             system_config.DEVICE = "cpu"
-        else:
-            # For reproducibility on CUDA
-            torch.backends.cudnn.deterministic = True
-            torch.backends.cudnn.benchmark = False
+        # The CUDA determinism settings are now applied per-batch in the loop
+        # else:
+        #     torch.backends.cudnn.deterministic = True
+        #     torch.backends.cudnn.benchmark = False
+        #     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+        #     torch.use_deterministic_algorithms(True)
     
     if system_config.DEVICE == "cpu" and torch.cuda.is_available():
         logging.info("CUDA is available but device is set to CPU. Using CPU.")
@@ -104,6 +111,18 @@ def main(args):
             noise_batch = torch.cat([torch.load(f) for f in batch_files], dim=0)
             input_file_bases = [os.path.splitext(os.path.basename(f))[0] for f in batch_files]
 
+            logging.debug(f"Pre-extractor: noise_batch.shape = {noise_batch.shape}, dtype = {noise_batch.dtype}, device = {noise_batch.device}")
+            logging.debug(f"Pre-extractor: noise_batch_mean={noise_batch.mean():.6f}, noise_batch_std={noise_batch.std():.6f}")
+
+            # Reset seeds for each batch to ensure determinism
+            random.seed(system_config.SEED)
+            np.random.seed(system_config.SEED)
+            torch.manual_seed(system_config.SEED)
+            if system_config.DEVICE == "cuda":
+                torch.backends.cudnn.deterministic = True
+                torch.backends.cudnn.benchmark = False
+                os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+                torch.use_deterministic_algorithms(True)
 
             # Move input batch to the correct device (GPU if available)
             noise_batch = noise_batch.to(system_config.DEVICE)

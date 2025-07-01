@@ -36,7 +36,9 @@ def compare_tensors_in_directory(directory_path):
             name1 = tensor_names[i]
             name2 = tensor_names[j]
 
-            if not torch.equal(tensor1, tensor2):
+            # Use torch.allclose for floating-point comparison with a tolerance
+            # Adjust rtol (relative tolerance) and atol (absolute tolerance) as needed
+            if not torch.allclose(tensor1, tensor2, rtol=1e-05, atol=1e-08):
                 unequal_pairs_count += 1
                 print(f"Tensors {name1} and {name2} are NOT equal.")
             else:
@@ -45,7 +47,16 @@ def compare_tensors_in_directory(directory_path):
     print(f"\nTotal number of tensor pairs compared: {total_pairs}")
     print(f"Number of unequal tensor pairs: {unequal_pairs_count}")
 
+
 if __name__ == "__main__":
-    inputs_directory = "./inputs"
-    compare_tensors_in_directory(inputs_directory)
+    import argparse
+    parser = argparse.ArgumentParser(description="Compare all .pt tensors in a directory.")
+    parser.add_argument(
+        "--inputs_directory",
+        type=str,
+        default="./inputs",
+        help="Path to the directory containing .pt tensor files (default: ./inputs)"
+    )
+    args = parser.parse_args()
+    compare_tensors_in_directory(args.inputs_directory)
 

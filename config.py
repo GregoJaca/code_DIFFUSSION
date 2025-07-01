@@ -7,6 +7,7 @@ import torch
 class SystemConfig:
     """General system and I/O configurations."""
     DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
+    # DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
     INPUT_DIR: str = "inputs"
     OUTPUT_DIR: str = "outputs"
     SEED: int = 42
@@ -57,7 +58,7 @@ class ModelConfig:
 @dataclass
 class InferenceConfig:
     """Configuration for the denoising inference process."""
-    BATCH_SIZE: int = 2
+    BATCH_SIZE: int = 1
     NUM_INFERENCE_STEPS: int = 50
     GUIDANCE_SCALE: float = 7.5 # For guided diffusion, not used in DDPM
     FLATTEN_OUTPUT: bool = True # Flatten spatial dims to vectors
