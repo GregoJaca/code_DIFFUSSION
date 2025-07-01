@@ -153,7 +153,7 @@ def main(args):
                 )
                 # Save final images
                 for j, file_base in enumerate(input_file_bases):
-                    img_path = os.path.join(system_config.OUTPUT_DIR, "final_tensors", f"{file_base}_final_tensor.pt")
+                    img_path = os.path.join(system_config.OUTPUT_DIR, "final_tensors", f"{file_base}.pt")
                     torch.save(final_images[j], img_path)
                     logging.debug(f"saved {file_base}_final_tensor.pt")
                 logging.info(f"Saved final images for batch {i+1}.")

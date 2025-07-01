@@ -40,11 +40,18 @@ def generate_plane_set(
         generator=base_generator
     )
 
-    # Save the base noise tensor
-    base_filename = f"plane_{base_seed:04d}_base.pt"
-    base_path = os.path.join(output_dir, base_filename)
-    torch.save(base_noise, base_path)
-    print(f"\nSaved base noise: {base_path}")
+    # Save the base noise tensor only if it's not redundant with a plane sample
+    # It's redundant if both num_prompts_per_direction are odd, as this means
+    # the (0,0) point of the plane will be generated, which is the base noise.
+    if num_prompts_per_direction[0] % 2 == 1 and num_prompts_per_direction[1] % 2 == 1:
+        print(f"\nSkipping saving base noise as it's redundant with a plane sample (num_prompts_per_direction is {num_prompts_per_direction}).")
+    else:
+        base_filename = f"plane_{base_seed:04d}_base.pt"
+        base_filename = f"plane_{base_seed:04d}_{direction_seeds[0]:03d}_{direction_seeds[1]:03d}_x000_y000.pt"
+
+        base_path = os.path.join(output_dir, base_filename)
+        torch.save(base_noise, base_path)
+        print(f"\nSaved base noise: {base_path}")
 
     # 2. Generate two direction vectors
     direction_generator_0 = torch.Generator().manual_seed(direction_seeds[0])

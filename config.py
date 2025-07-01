@@ -11,13 +11,23 @@ class SystemConfig:
     INPUT_DIR: str = "inputs"
     OUTPUT_DIR: str = "outputs"
     SEED: int = 42
+    CLASSIFICATION_COLORS: list[tuple[int, int, int]] = (
+        (255, 0, 0),    # Red
+        (0, 255, 0),    # Green
+        (0, 0, 255),    # Blue
+        (255, 255, 0),  # Yellow
+        (255, 0, 255),  # Magenta
+        (0, 255, 255),  # Cyan
+        (128, 0, 0),    # Maroon
+        (0, 128, 0),    # Dark Green
+        (0, 0, 128),    # Navy
+        (128, 128, 0)   # Olive
+    )
 
 @dataclass
 class GenerationConfig:
     """Configuration for input noise generation."""
     NUM_SAMPLES: int = 2
-    # IMAGE_SIZE: int = 32
-    # IN_CHANNELS: int = 3
     IMAGE_SIZE: int = 28
     IN_CHANNELS: int = 1
 
@@ -41,7 +51,8 @@ class ModelConfig:
             "first_layer": "conv_in",
             "last_layer": "conv_out"
         },
-        "google/ddpm-cifar10-32": { # Example for a different dataset
+
+        "google/ddpm-cifar10-32": { # Example for a different dataset. has different image size.
              "first_layer": "conv_in",
              "last_layer": "conv_out"
         }
@@ -61,8 +72,8 @@ class InferenceConfig:
     BATCH_SIZE: int = 1
     NUM_INFERENCE_STEPS: int = 50
     GUIDANCE_SCALE: float = 7.5 # For guided diffusion, not used in DDPM
-    FLATTEN_OUTPUT: bool = True # Flatten spatial dims to vectors
-    EXTRACT_HIDDEN_STATES: bool = True # Whether to extract hidden states or just generate the final image
+    FLATTEN_OUTPUT: bool = False # Flatten spatial dims to vectors
+    EXTRACT_HIDDEN_STATES: bool = False # Whether to extract hidden states or just generate the final image
 
 # Instantiate configurations for easy import
 system_config = SystemConfig()
@@ -88,14 +99,14 @@ class DefaultConfig:
     """Default arguments for various scripts."""
     BASE_SEED: int = 42
     DIRECTION_SEEDS: tuple[int, int] = (100, 200)
-    NUM_PROMPTS_PER_DIRECTION: tuple[int, int] = (5, 5)
-    LEN_PER_DIRECTION: tuple[float, float] = (1000.0, 1000.0)
+    NUM_PROMPTS_PER_DIRECTION: tuple[int, int] = (3, 3)
+    LEN_PER_DIRECTION: tuple[float, float] = (3000.0, 3000.0)
     INPUTS_DIRECTORY: str = "./inputs"
     DEBUG: bool = False
     PERTURB_BASE_SEED: int = 42
     PERTURB_SEED: int = 69
     NUM_PERTURBATIONS: int = 10
-    EPSILON: float = 0.7071
+    EPSILON: float = 1000
     IMAGE_STEP: int = -1
     OUTPUT_IMAGE_DIR: str = "outputs/images"
 

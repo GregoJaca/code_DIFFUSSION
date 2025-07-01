@@ -48,7 +48,7 @@ def classify_tensors(tensors_path, model):
     ])
 
     for filename in tqdm(os.listdir(tensors_path)):
-        if filename.endswith(".pt"):
+        if filename.endswith(".pt") and "_x" in filename and "_y" in filename:
             file_path = os.path.join(tensors_path, filename)
             try:
                 # Load the tensor and take the last generation step
@@ -90,10 +90,39 @@ def main():
         default=ClassifierConfig.DEFAULT_JSON_NAME,
         help="Name of the output JSON file.",
     )
+    parser.add_argument(
+        "--num_prompts_per_direction",
+        type=int,
+        nargs=2,
+        default=[5, 5],
+        help="Number of prompts along each direction (e.g., 5 5 for a 5x5 grid).",
+    )
     args = parser.parse_args()
 
     model = get_model()
     predictions = classify_tensors(args.tensors_path, model)
+
+    # Save predictions as a 2D tensor
+    num_x, num_y = args.num_prompts_per_direction
+    classifications_plane = torch.zeros((num_x, num_y), dtype=torch.long)
+
+    for filename, prediction in predictions.items():
+        # Extract x and y coordinates from filename: plane_0042_x000_y000.pt
+        parts = filename.split('_')
+        x_str = parts[-2][1:] # Remove 'x'
+        y_str = parts[-1].split('.')[0][1:] # Remove 'y' and '.pt'
+
+        x_coord = int(x_str)
+        y_coord = int(y_str)
+        
+        if x_coord < num_x and y_coord < num_y:
+            classifications_plane[x_coord, y_coord] = prediction
+        else:
+            print(f"Warning: Coordinates ({x_coord}, {y_coord}) out of bounds for a {num_x}x{num_y} grid.")
+
+    plane_output_path = os.path.join(args.tensors_path, "classifications_plane.pt")
+    torch.save(classifications_plane, plane_output_path)
+    print(f"Classification plane saved to {plane_output_path}")
 
     output_path = os.path.join(args.tensors_path, args.json_name)
     with open(output_path, "w") as f:
