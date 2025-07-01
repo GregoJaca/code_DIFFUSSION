@@ -102,26 +102,25 @@ def main(args):
             start_mem = torch.cuda.memory_allocated(system_config.DEVICE) if system_config.DEVICE == "cuda" else 0
             batch_start_time = time.time()
 
-            # Run extraction
-            full_sequence, extracted_states = extractor.run_extraction(
-                initial_noise=noise_batch,
-                num_steps=args.num_steps,
-                flatten_output=args.flatten
-            )
-
-            batch_end_time = time.time()
-            end_mem = torch.cuda.memory_allocated(system_config.DEVICE) if system_config.DEVICE == "cuda" else 0
-
-            batch_duration = batch_end_time - batch_start_time
-            total_time += batch_duration
-
-            logging.info(f"Batch {i+1} extraction took {batch_duration:.2f}s.")
-            if system_config.DEVICE == "cuda":
-                logging.info(f"GPU Memory used for batch: {(end_mem - start_mem) / 1e6:.2f} MB")
-
-            # Save results
-            save_tensors(sample_indices, full_sequence, extracted_states)
-            logging.info(f"Saved results for batch {i+1}.")
+            # Run extraction or generation
+            if args.extract_states:
+                full_sequence, extracted_states = extractor.run_extraction(
+                    initial_noise=noise_batch,
+                    num_steps=args.num_steps,
+                    flatten_output=args.flatten
+                )
+                save_tensors(sample_indices, full_sequence, extracted_states)
+                logging.info(f"Saved results for batch {i+1}.")
+            else:
+                final_images = extractor.generate_final_image(
+                    initial_noise=noise_batch,
+                    num_steps=args.num_steps
+                )
+                # Save final images
+                for j, sample_idx in enumerate(sample_indices):
+                    img_path = os.path.join(system_config.OUTPUT_DIR, f"sample_{sample_idx:04d}_final.pt")
+                    torch.save(final_images[j], img_path)
+                logging.info(f"Saved final images for batch {i+1}.")
 
             pbar.update(len(batch_files))
 
@@ -138,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=inference_config.BATCH_SIZE, help="Batch size for inference.")
     parser.add_argument("--num_steps", type=int, default=inference_config.NUM_INFERENCE_STEPS, help="Number of denoising steps.")
     parser.add_argument("--flatten", action=argparse.BooleanOptionalAction, default=inference_config.FLATTEN_OUTPUT, help="Flatten spatial dimensions of hidden states.")
+    parser.add_argument("--extract_states", action=argparse.BooleanOptionalAction, default=inference_config.EXTRACT_HIDDEN_STATES, help="Extract hidden states.")
     
     cli_args = parser.parse_args()
     main(cli_args)

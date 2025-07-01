@@ -76,6 +76,7 @@ python main.py --batch_size 2 --num_steps 50 --flatten
 -   `--batch_size`: Number of samples to process simultaneously. Adjust based on your GPU memory.
 -   `--num_steps`: The number of timesteps in the denoising process.
 -   `--flatten` / `--no-flatten`: Whether to save hidden states as flattened vectors or as spatial tensors.
+-   `--extract_states` / `--no-extract-states`: Whether to perform the full hidden state extraction or only generate the final image. Defaults to `True`.
 
 The script will log its progress, including timing and memory usage, and save the results in the `/outputs` directory with a clear naming convention.
 

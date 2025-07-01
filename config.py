@@ -61,6 +61,7 @@ class InferenceConfig:
     NUM_INFERENCE_STEPS: int = 50
     GUIDANCE_SCALE: float = 7.5 # For guided diffusion, not used in DDPM
     FLATTEN_OUTPUT: bool = True # Flatten spatial dims to vectors
+    EXTRACT_HIDDEN_STATES: bool = True # Whether to extract hidden states or just generate the final image
 
 # Instantiate configurations for easy import
 system_config = SystemConfig()
