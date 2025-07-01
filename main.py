@@ -123,7 +123,7 @@ def main(args):
                 )
                 # Save final images
                 for j, sample_idx in enumerate(sample_indices):
-                    img_path = os.path.join(system_config.OUTPUT_DIR, f"final_tendors/sample_{sample_idx:04d}_final.pt")
+                    img_path = os.path.join(system_config.OUTPUT_DIR, f"final_tensors/sample_{sample_idx:04d}_final.pt")
                     torch.save(final_images[j], img_path)
                     logging.debug(f"saved sample_{sample_idx:04d}_final.pt")
                 logging.info(f"Saved final images for batch {i+1}.")

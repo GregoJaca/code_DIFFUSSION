@@ -91,13 +91,21 @@ def tensor_to_image(tensor_path: str, step: int, output_base_dir: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert a tensor sequence or final tensor to an image.")
-    parser.add_argument(
+    parser = argparse.ArgumentParser(description="Convert tensor(s) to image(s).")
+    
+    # Create a mutually exclusive group for tensor-path and folder-path
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "--tensor-path",
         type=str,
-        required=True,
-        help="Path to the input tensor file (e.g., 'outputs/sequences/sample_0000_sequence.pt' or 'outputs/final_tensors/sample_0001_final.pt')."
+        help="Path to a single input tensor file (e.g., 'outputs/sequences/sample_0000_sequence.pt' or 'outputs/final_tensors/sample_0001_final.pt')."
     )
+    group.add_argument(
+        "--folder-path",
+        type=str,
+        help="Path to a folder containing tensor files to process."
+    )
+
     parser.add_argument(
         "--step",
         type=int,
@@ -105,13 +113,25 @@ if __name__ == "__main__":
         help="The generation step to use for sequence tensors. Defaults to the last step (-1). Ignored for final tensors."
     )
     parser.add_argument(
-        "--output-base-dir", # Renamed from --output-dir
+        "--output-base-dir",
         type=str,
-        default=os.path.join("outputs", "images"), # Changed default to just "images"
+        default=os.path.join("outputs", "images"),
         help="Base directory to save the output images. Subdirectories 'sequences' will be created."
     )
 
     args = parser.parse_args()
 
-    tensor_to_image(args.tensor_path, args.step, args.output_base_dir)
+    if args.tensor_path:
+        tensor_to_image(args.tensor_path, args.step, args.output_base_dir)
+    elif args.folder_path:
+        if not os.path.isdir(args.folder_path):
+            logging.error(f"Folder not found at: {args.folder_path}")
+        else:
+            for filename in os.listdir(args.folder_path):
+                if filename.endswith(".pt"):
+                    full_path = os.path.join(args.folder_path, filename)
+                    logging.info(f"Processing tensor from folder: {full_path}")
+                    tensor_to_image(full_path, args.step, args.output_base_dir)
+                else:
+                    logging.info(f"Skipping non-.pt file in folder: {filename}")
 
