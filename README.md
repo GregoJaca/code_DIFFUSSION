@@ -76,9 +76,21 @@ python main.py --batch_size 2 --num_steps 50 --flatten
 -   `--batch_size`: Number of samples to process simultaneously. Adjust based on your GPU memory.
 -   `--num_steps`: The number of timesteps in the denoising process.
 -   `--flatten` / `--no-flatten`: Whether to save hidden states as flattened vectors or as spatial tensors.
--   `--extract_states` / `--no-extract-states`: Whether to perform the full hidden state extraction or only generate the final image. Defaults to `True`.
+-   `--extract_states` / `--no-extract_states`: Whether to perform the full hidden state extraction or only generate the final image. Defaults to `True`.
 
 The script will log its progress, including timing and memory usage, and save the results in the `/outputs` directory with a clear naming convention.
+
+### Step 3: Convert Tensor Sequences to Images
+
+After running `main.py` with `--extract_states` (default behavior), the full denoising sequences are saved as `.pt` tensor files in `outputs/sequences/`. You can convert a specific step from these sequences into a PNG image using `tensor_to_image.py`.
+
+```bash
+python tensor_to_image.py --tensor-path "outputs/sequences/sample_0000_sequence.pt" --step -1
+```
+
+-   `--tensor-path`: **(Required)** Path to the input tensor file (e.g., `outputs/sequences/sample_0000_sequence.pt`).
+-   `--step`: The generation step to visualize. Defaults to `-1` (the last, most refined step). You can specify any valid step number (0 to `num_steps - 1`).
+-   The output image will be saved in `outputs/images/sequences/` with a name indicating the original tensor file and the chosen step (e.g., `sample_0000_sequence_step_0049.png`).
 
 ## Configuration
 

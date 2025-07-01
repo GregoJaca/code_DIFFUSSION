@@ -11,8 +11,7 @@ from typing import List
 from config import system_config, model_config, inference_config
 from extraction_system import StateExtractor
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Setup logging (will be configured based on args later)
 
 def setup_directories():
     """Create all necessary output directories."""
@@ -45,6 +44,12 @@ def save_tensors(
 
 def main(args):
     """Main function to run the extraction process."""
+    # Configure logging based on debug argument
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
     torch.manual_seed(system_config.SEED)
     
     if not torch.cuda.is_available() and system_config.DEVICE == "cuda":
@@ -93,9 +98,9 @@ def main(args):
             noise_batch = noise_batch.to(system_config.DEVICE)
 
             # Debug: Print input tensor details before model call (after device transfer)
-            print(f"[DEBUG] Batch {i+1}: noise_batch.shape = {noise_batch.shape}, dtype = {noise_batch.dtype}, device = {noise_batch.device}")
-            print(f"[DEBUG] Batch {i+1}: Any NaNs in noise_batch? {torch.isnan(noise_batch).any().item()}")
-            print(f"[DEBUG] Batch {i+1}: Any Infs in noise_batch? {torch.isinf(noise_batch).any().item()}")
+            logging.debug(f"Batch {i+1}: noise_batch.shape = {noise_batch.shape}, dtype = {noise_batch.dtype}, device = {noise_batch.device}")
+            logging.debug(f"Batch {i+1}: Any NaNs in noise_batch? {torch.isnan(noise_batch).any().item()}")
+            logging.debug(f"Batch {i+1}: Any Infs in noise_batch? {torch.isinf(noise_batch).any().item()}")
 
             logging.info(f"Processing batch {i+1}/{num_batches} with samples {sample_indices}...")
 
@@ -118,8 +123,9 @@ def main(args):
                 )
                 # Save final images
                 for j, sample_idx in enumerate(sample_indices):
-                    img_path = os.path.join(system_config.OUTPUT_DIR, f"sample_{sample_idx:04d}_final.pt")
+                    img_path = os.path.join(system_config.OUTPUT_DIR, f"final_tendors/sample_{sample_idx:04d}_final.pt")
                     torch.save(final_images[j], img_path)
+                    logging.debug(f"saved sample_{sample_idx:04d}_final.pt")
                 logging.info(f"Saved final images for batch {i+1}.")
 
             pbar.update(len(batch_files))
@@ -138,6 +144,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_steps", type=int, default=inference_config.NUM_INFERENCE_STEPS, help="Number of denoising steps.")
     parser.add_argument("--flatten", action=argparse.BooleanOptionalAction, default=inference_config.FLATTEN_OUTPUT, help="Flatten spatial dimensions of hidden states.")
     parser.add_argument("--extract_states", action=argparse.BooleanOptionalAction, default=inference_config.EXTRACT_HIDDEN_STATES, help="Extract hidden states.")
+    parser.add_argument("--debug", action=argparse.BooleanOptionalAction, default=False, help="Enable debug logging.")
     
     cli_args = parser.parse_args()
     main(cli_args)

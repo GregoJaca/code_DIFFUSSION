@@ -5,6 +5,7 @@ import torch
 import logging
 from typing import List, Dict, Tuple
 from diffusers import DDPMPipeline, DDPMScheduler, UNet2DModel
+from config import generation_config # Import generation_config
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -33,7 +34,8 @@ class StateExtractor:
         
         logging.info(f"Loading model '{model_id}'...")
         try:
-            self.model = UNet2DModel.from_pretrained(model_id).to(self.device)
+            # Pass in_channels from generation_config
+            self.model = UNet2DModel.from_pretrained(model_id, in_channels=generation_config.IN_CHANNELS).to(self.device)
             self.scheduler = DDPMScheduler.from_pretrained(model_id)
         except Exception as e:
             logging.error(f"Failed to load model '{model_id}'. Ensure it's a UNet2DModel. Error: {e}")
@@ -130,3 +132,34 @@ class StateExtractor:
         torch.cuda.empty_cache()
 
         return full_sequence, processed_states
+
+    def generate_final_image(
+        self,
+        initial_noise: torch.Tensor,
+        num_steps: int,
+    ) -> torch.Tensor:
+        """
+        Runs the full denoising process to generate the final image.
+
+        Args:
+            initial_noise (torch.Tensor): The starting noise tensor (x_T).
+            num_steps (int): Number of denoising steps.
+
+        Returns:
+            torch.Tensor: The final generated image (x_0).
+        """
+        self.scheduler.set_timesteps(num_steps)
+        image = initial_noise.to(self.device)
+
+        with torch.no_grad():
+            for t in self.scheduler.timesteps:
+                # Predict noise
+                noise_pred = self.model(image, t).sample
+                # Compute previous image state
+                image = self.scheduler.step(noise_pred, t, image).prev_sample
+        
+        # Clean GPU memory
+        del noise_pred
+        torch.cuda.empty_cache()
+
+        return image.cpu()

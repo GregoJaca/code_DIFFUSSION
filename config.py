@@ -15,17 +15,17 @@ class SystemConfig:
 class GenerationConfig:
     """Configuration for input noise generation."""
     NUM_SAMPLES: int = 2
-    IMAGE_SIZE: int = 32
-    IN_CHANNELS: int = 3
-    # IMAGE_SIZE: int = 28
-    # IN_CHANNELS: int = 1
+    # IMAGE_SIZE: int = 32
+    # IN_CHANNELS: int = 3
+    IMAGE_SIZE: int = 28
+    IN_CHANNELS: int = 1
 
 @dataclass
 class ModelConfig:
     """Configuration for the diffusion model."""
     # --- Selected Model ---
     # Switch between model IDs here. Layer names are mapped below.
-    MODEL_ID: str = "google/ddpm-cifar10-32" # Use a valid public model
+    MODEL_ID: str = "1aurent/ddpm-mnist"
     
     # --- Model-specific layer names for hooking ---
     # This allows the system to be agnostic to the model architecture.
