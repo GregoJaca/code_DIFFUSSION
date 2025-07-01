@@ -18,10 +18,11 @@ def setup_directories():
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "sequences"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "layer1"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "last_layer"), exist_ok=True)
+    os.makedirs(os.path.join(system_config.OUTPUT_DIR, "final_tensors"), exist_ok=True)
     logging.info("Output directories created.")
 
 def save_tensors(
-    sample_indices: List[int],
+    input_file_bases: List[str],
     sequence_batch: torch.Tensor,
     states_batch: dict,
 ):
@@ -29,17 +30,17 @@ def save_tensors(
     base_path = system_config.OUTPUT_DIR
     
     # Unbind batch dimension and save each sample individually
-    for i, sample_idx in enumerate(sample_indices):
+    for i, file_base in enumerate(input_file_bases):
         # Save full sequence
-        seq_path = os.path.join(base_path, "sequences", f"sample_{sample_idx:04d}_sequence.pt")
+        seq_path = os.path.join(base_path, "sequences", f"{file_base}_sequence.pt")
         torch.save(sequence_batch[i], seq_path)
         
         # Save layer 1 trajectory
-        l1_path = os.path.join(base_path, "layer1", f"sample_{sample_idx:04d}_trajectory.pt")
+        l1_path = os.path.join(base_path, "layer1", f"{file_base}_trajectory.pt")
         torch.save(states_batch["layer1"][i], l1_path)
 
         # Save last layer trajectory
-        ll_path = os.path.join(base_path, "last_layer", f"sample_{sample_idx:04d}_trajectory.pt")
+        ll_path = os.path.join(base_path, "last_layer", f"{file_base}_trajectory.pt")
         torch.save(states_batch["last_layer"][i], ll_path)
 
 def main(args):
@@ -52,7 +53,17 @@ def main(args):
 
     torch.manual_seed(system_config.SEED)
     
-    if not torch.cuda.is_available() and system_config.DEVICE == "cuda":
+    if system_config.DEVICE == "cuda":
+        if not torch.cuda.is_available():
+            logging.warning("CUDA not available. Falling back to CPU.")
+            system_config.DEVICE = "cpu"
+        else:
+            # For reproducibility on CUDA
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+    
+    if system_config.DEVICE == "cpu" and torch.cuda.is_available():
+        logging.info("CUDA is available but device is set to CPU. Using CPU.")
         logging.warning("CUDA not available. Falling back to CPU.")
         system_config.DEVICE = "cpu"
     logging.info(f"Using device: {system_config.DEVICE}")
@@ -91,7 +102,7 @@ def main(args):
 
             # Load batch of noise tensors
             noise_batch = torch.cat([torch.load(f) for f in batch_files], dim=0)
-            sample_indices = [int(os.path.splitext(os.path.basename(f))[0].split('_')[1]) for f in batch_files]
+            input_file_bases = [os.path.splitext(os.path.basename(f))[0] for f in batch_files]
 
 
             # Move input batch to the correct device (GPU if available)
@@ -102,7 +113,7 @@ def main(args):
             logging.debug(f"Batch {i+1}: Any NaNs in noise_batch? {torch.isnan(noise_batch).any().item()}")
             logging.debug(f"Batch {i+1}: Any Infs in noise_batch? {torch.isinf(noise_batch).any().item()}")
 
-            logging.info(f"Processing batch {i+1}/{num_batches} with samples {sample_indices}...")
+            logging.info(f"Processing batch {i+1}/{num_batches}...")
 
             start_mem = torch.cuda.memory_allocated(system_config.DEVICE) if system_config.DEVICE == "cuda" else 0
             batch_start_time = time.time()
@@ -114,7 +125,7 @@ def main(args):
                     num_steps=args.num_steps,
                     flatten_output=args.flatten
                 )
-                save_tensors(sample_indices, full_sequence, extracted_states)
+                save_tensors(input_file_bases, full_sequence, extracted_states)
                 logging.info(f"Saved results for batch {i+1}.")
             else:
                 final_images = extractor.generate_final_image(
@@ -122,10 +133,10 @@ def main(args):
                     num_steps=args.num_steps
                 )
                 # Save final images
-                for j, sample_idx in enumerate(sample_indices):
-                    img_path = os.path.join(system_config.OUTPUT_DIR, f"final_tensors/sample_{sample_idx:04d}_final.pt")
+                for j, file_base in enumerate(input_file_bases):
+                    img_path = os.path.join(system_config.OUTPUT_DIR, "final_tensors", f"{file_base}_final_tensor.pt")
                     torch.save(final_images[j], img_path)
-                    logging.debug(f"saved sample_{sample_idx:04d}_final.pt")
+                    logging.debug(f"saved {file_base}_final_tensor.pt")
                 logging.info(f"Saved final images for batch {i+1}.")
 
             pbar.update(len(batch_files))

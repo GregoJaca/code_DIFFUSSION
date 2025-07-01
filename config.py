@@ -68,3 +68,14 @@ system_config = SystemConfig()
 generation_config = GenerationConfig()
 model_config = ModelConfig()
 inference_config = InferenceConfig()
+
+
+
+# For the classifier
+class ClassifierConfig:
+    """
+    Configuration class for the MNIST classifier.
+    """
+    DEFAULT_TENSORS_PATH = "outputs/final_tensors"
+    DEFAULT_JSON_NAME = "predictions.json"
+    weights_url = "https://media.githubusercontent.com/media/a-martyn/mnist-digits-recognition-pytorch/main/model.pth"

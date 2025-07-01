@@ -71,8 +71,10 @@ def generate_perturbed_set(
         # Add the perturbation to the base noise to get the final tensor
         perturbed_noise = base_noise + perturbation
 
+        print(f"  Perturbation {i:03d}: epsilon={epsilon}, perturbation_norm={torch.linalg.norm(perturbation):.6f}") 
+
         # Save the perturbed tensor
-        pert_filename = f"set_{base_seed:04d}_pert_{i:03d}.pt"
+        pert_filename = f"set_{base_seed:04d}_pert_{i:03d}_eps_{epsilon:.4f}.pt"
         pert_path = os.path.join(output_dir, pert_filename)
         torch.save(perturbed_noise, pert_path)
 
