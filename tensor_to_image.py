@@ -6,6 +6,7 @@ import torch
 import argparse
 from torchvision.utils import save_image
 import logging
+from config import default_config
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -109,13 +110,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--step",
         type=int,
-        default=-1,
+        default=default_config.IMAGE_STEP,
         help="The generation step to use for sequence tensors. Defaults to the last step (-1). Ignored for final tensors."
     )
     parser.add_argument(
         "--output-base-dir",
         type=str,
-        default=os.path.join("outputs", "images"),
+        default=default_config.OUTPUT_IMAGE_DIR,
         help="Base directory to save the output images. Subdirectories 'sequences' will be created."
     )
 

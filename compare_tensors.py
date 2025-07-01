@@ -2,6 +2,8 @@
 
 import torch
 import os
+import argparse
+from config import default_config
 
 def compare_tensors_in_directory(directory_path):
     tensors = []
@@ -54,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--inputs_directory",
         type=str,
-        default="./inputs",
+        default=default_config.INPUTS_DIRECTORY,
         help="Path to the directory containing .pt tensor files (default: ./inputs)"
     )
     args = parser.parse_args()

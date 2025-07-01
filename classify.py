@@ -5,25 +5,28 @@ import os
 import json
 import argparse
 from torchvision import transforms
-from PIL import Image
+# from PIL import Image
 from tqdm import tqdm
 
-from classifier_model import MNISTClassifier
 from config import ClassifierConfig
-from torch.hub import load_state_dict_from_url
 
+
+import torch
+from classifier_model import LeNetMNIST # MNISTClassifier
 
 def get_model():
     """
-    Loads the MNISTClassifier and attaches pre-trained weights from an open-source URL.
+    Loads the LeNetMNIST classifier and attaches pre-trained weights from a local file.
     """
-    model = MNISTClassifier()
+    model = LeNetMNIST()
     
-    # Download and load the pre-trained weights
-    state_dict = load_state_dict_from_url(ClassifierConfig.weights_url, progress=True)
+    # Load the state dictionary from the local file
+    state_dict = torch.load(ClassifierConfig.local_weights_path)
+
     model.load_state_dict(state_dict)
     
     return model
+
 def classify_tensors(tensors_path, model):
     """
     Classifies a directory of tensors.
@@ -37,7 +40,7 @@ def classify_tensors(tensors_path, model):
     """
     predictions = {}
     model.eval()
-    transform = transforms.Compose([
+    transform = transforms.Compose([ # GGG this is not being used, should i delete?
         transforms.ToPILImage(),
         transforms.Resize((28, 28)),
         transforms.ToTensor(),

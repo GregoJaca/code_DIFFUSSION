@@ -11,7 +11,7 @@ from typing import List
 import random
 import numpy as np
 
-from config import system_config, model_config, inference_config
+from config import system_config, model_config, inference_config, default_config
 from extraction_system import StateExtractor
 
 # Setup logging (will be configured based on args later)
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_steps", type=int, default=inference_config.NUM_INFERENCE_STEPS, help="Number of denoising steps.")
     parser.add_argument("--flatten", action=argparse.BooleanOptionalAction, default=inference_config.FLATTEN_OUTPUT, help="Flatten spatial dimensions of hidden states.")
     parser.add_argument("--extract_states", action=argparse.BooleanOptionalAction, default=inference_config.EXTRACT_HIDDEN_STATES, help="Extract hidden states.")
-    parser.add_argument("--debug", action=argparse.BooleanOptionalAction, default=False, help="Enable debug logging.")
+    parser.add_argument("--debug", action=argparse.BooleanOptionalAction, default=default_config.DEBUG, help="Enable debug logging.")
     
     cli_args = parser.parse_args()
     main(cli_args)

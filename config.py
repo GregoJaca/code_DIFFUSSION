@@ -79,4 +79,29 @@ class ClassifierConfig:
     """
     DEFAULT_TENSORS_PATH = "outputs/final_tensors"
     DEFAULT_JSON_NAME = "predictions.json"
-    weights_url = "https://media.githubusercontent.com/media/a-martyn/mnist-digits-recognition-pytorch/main/model.pth"
+    # weights_url = "https://media.githubusercontent.com/media/a-martyn/mnist-digits-recognition-pytorch/main/model.pth"
+    local_weights_path = "classifier_model/mnist-classifier.pt"
+
+
+@dataclass
+class DefaultConfig:
+    """Default arguments for various scripts."""
+    BASE_SEED: int = 42
+    DIRECTION_SEEDS: tuple[int, int] = (100, 200)
+    NUM_PROMPTS_PER_DIRECTION: tuple[int, int] = (5, 5)
+    LEN_PER_DIRECTION: tuple[float, float] = (1000.0, 1000.0)
+    INPUTS_DIRECTORY: str = "./inputs"
+    DEBUG: bool = False
+    PERTURB_BASE_SEED: int = 42
+    PERTURB_SEED: int = 69
+    NUM_PERTURBATIONS: int = 10
+    EPSILON: float = 0.7071
+    IMAGE_STEP: int = -1
+    OUTPUT_IMAGE_DIR: str = "outputs/images"
+
+# Instantiate configurations for easy import
+system_config = SystemConfig()
+generation_config = GenerationConfig()
+model_config = ModelConfig()
+inference_config = InferenceConfig()
+default_config = DefaultConfig()

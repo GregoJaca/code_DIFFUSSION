@@ -8,7 +8,7 @@ import torch
 import argparse
 
 # Import base configurations for consistency
-from config import generation_config, system_config
+from config import generation_config, system_config, default_config
 
 def generate_perturbed_set(
     base_seed: int,
@@ -90,25 +90,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--base_seed",
         type=int,
-        default=42,
+        default=default_config.PERTURB_BASE_SEED,
         help="Seed for generating the initial 'base' noise tensor."
     )
     parser.add_argument(
         "--perturb_seed",
         type=int,
-        default=69,
+        default=default_config.PERTURB_SEED,
         help="Seed for generating the random 'directions' of the perturbations."
     )
     parser.add_argument(
         "--num_perturbations",
         type=int,
-        default=10,
+        default=default_config.NUM_PERTURBATIONS,
         help="Number of perturbed samples to generate from the single base noise."
     )
     parser.add_argument(
         "--epsilon",
         type=float,
-        default=0.7071,
+        default=default_config.EPSILON,
         help="The constant magnitude (L2 norm) of the perturbation vector."
     )
 
