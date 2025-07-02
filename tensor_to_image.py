@@ -77,9 +77,13 @@ def tensor_to_image(tensor_path: str, step: int, output_base_dir: str):
     # Create output directory if it doesn't exist
     os.makedirs(output_subdir, exist_ok=True)
 
+    logging.debug(f"Before normalization: Min={image_tensor.min():.4f}, Max={image_tensor.max():.4f}, Mean={image_tensor.mean():.4f}, Std={image_tensor.std():.4f}")
+
     # Normalize the tensor from [-1, 1] to [0, 1] for saving
     image_tensor = (image_tensor + 1) / 2.0
     image_tensor = image_tensor.clamp(0, 1) # Ensure values are in [0, 1]
+
+    logging.debug(f"After normalization and clamping: Min={image_tensor.min():.4f}, Max={image_tensor.max():.4f}, Mean={image_tensor.mean():.4f}, Std={image_tensor.std():.4f}")
 
     output_path = os.path.join(output_subdir, output_filename)
 

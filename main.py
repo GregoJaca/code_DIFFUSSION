@@ -149,7 +149,8 @@ def main(args):
             else:
                 final_images = extractor.generate_final_image(
                     initial_noise=noise_batch,
-                    num_steps=args.num_steps
+                    num_steps=args.num_steps,
+                    seed=system_config.SEED
                 )
                 # Save final images
                 for j, file_base in enumerate(input_file_bases):

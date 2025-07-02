@@ -19,9 +19,11 @@ def generate_and_save_noise(num_samples: int, image_size: int, channels: int, ou
     print(f"Generating {num_samples} noise inputs...")
     
     for i in range(num_samples):
+        # Use a different random seed for each sample
+        random_seed = system_config.SEED + i * int.from_bytes(os.urandom(2), 'little')
         noise = torch.randn(
             (1, channels, image_size, image_size),
-            generator=torch.Generator().manual_seed(system_config.SEED + i)
+            generator=torch.Generator().manual_seed(random_seed)
         )
         output_path = os.path.join(output_dir, f"noise_{i:04d}.pt")
         torch.save(noise, output_path)

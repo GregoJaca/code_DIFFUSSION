@@ -136,6 +136,7 @@ class StateExtractor:
         self,
         initial_noise: torch.Tensor,
         num_steps: int,
+        seed: int,
     ) -> torch.Tensor:
         """
         Runs the full denoising process to generate the final image.
@@ -149,13 +150,14 @@ class StateExtractor:
         """
         self.scheduler.set_timesteps(num_steps)
         image = initial_noise.to(self.device)
+        generator = torch.Generator(device=self.device).manual_seed(seed)
 
         with torch.no_grad():
             for i, t in enumerate(self.scheduler.timesteps):
                 # Predict noise
                 noise_pred = self.model(image, t).sample
                 # Compute previous image state
-                image = self.scheduler.step(noise_pred, t, image).prev_sample
+                image = self.scheduler.step(noise_pred, t, image, generator=generator).prev_sample
                 logging.debug(f"Timestep {i}: noise_pred_mean={noise_pred.mean():.6f}, noise_pred_std={noise_pred.std():.6f}, image_mean={image.mean():.6f}, image_std={image.std():.6f}")
         
         # Clean GPU memory
