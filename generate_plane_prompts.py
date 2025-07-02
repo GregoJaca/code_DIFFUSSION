@@ -10,6 +10,7 @@ def generate_plane_set(
     direction_seeds: tuple[int, int],
     num_prompts_per_direction: tuple[int, int],
     len_per_direction: tuple[float, float],
+    center_coords: tuple[float, float],
     image_size: int,
     channels: int,
     output_dir: str,
@@ -32,6 +33,7 @@ def generate_plane_set(
     print(f"Direction Seeds: {direction_seeds}")
     print(f"Number of Prompts per Direction: {num_prompts_per_direction}")
     print(f"Length per Direction: {len_per_direction}")
+    print(f"Center Coordinates: {center_coords}")
 
     # 1. Generate the base noise tensor using the base_seed
     base_generator = torch.Generator().manual_seed(base_seed)
@@ -67,6 +69,9 @@ def generate_plane_set(
         generator=direction_generator_1
     )
     direction_vector_1 = direction_vector_1 / torch.linalg.norm(direction_vector_1) # Normalize
+
+    # Add the center coordinates to the base noise
+    base_noise = base_noise + (center_coords[0] * direction_vector_0) + (center_coords[1] * direction_vector_1)
 
     print(f"Generating {num_prompts_per_direction[0]}x{num_prompts_per_direction[1]} plane samples...")
 
@@ -138,6 +143,13 @@ if __name__ == "__main__":
         default=default_config.LEN_PER_DIRECTION,
         help="Length of the plane along each direction (e.g., 2.0 2.0)."
     )
+    parser.add_argument(
+        "--center_coords",
+        type=float,
+        nargs=2,
+        default=default_config.CENTER_COORDS,
+        help="Center coordinates (x0, y0) of the plane."
+    )
 
     args = parser.parse_args()
 
@@ -146,6 +158,7 @@ if __name__ == "__main__":
         direction_seeds=tuple(args.direction_seeds),
         num_prompts_per_direction=tuple(args.num_prompts_per_direction),
         len_per_direction=tuple(args.len_per_direction),
+        center_coords=tuple(args.center_coords),
         image_size=generation_config.IMAGE_SIZE,
         channels=generation_config.IN_CHANNELS,
         output_dir=system_config.INPUT_DIR,

@@ -21,7 +21,6 @@ def tensor_to_image(tensor_path: str, step: int, output_base_dir: str):
         step (int): The generation step to visualize for sequence tensors. -1 for the last step.
                     This argument is ignored for final tensors.
         output_base_dir (str): The base directory to save the output images.
-                               Images will be saved in subdirectories like 'sequences'.
     """
     if not os.path.exists(tensor_path):
         logging.error(f"Tensor file not found at: {tensor_path}")
@@ -38,7 +37,8 @@ def tensor_to_image(tensor_path: str, step: int, output_base_dir: str):
     base_filename = os.path.splitext(os.path.basename(tensor_path))[0]
     image_tensor = None
     output_filename = ""
-    output_subdir = os.path.join(output_base_dir, "sequences") # Both sequence and final tensors go here
+    # output_subdir = os.path.join(output_base_dir, "sequences") # Both sequence and final tensors go here
+    output_subdir = output_base_dir 
 
     # Determine if it's a sequence tensor (4D) or a final tensor (3D)
     if loaded_tensor.dim() == 4:

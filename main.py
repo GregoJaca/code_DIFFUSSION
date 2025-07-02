@@ -19,6 +19,7 @@ from extraction_system import StateExtractor
 def setup_directories():
     """Create all necessary output directories."""
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "sequences"), exist_ok=True)
+    os.makedirs(os.path.join(system_config.OUTPUT_DIR, "images"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "layer1"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "last_layer"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "final_tensors"), exist_ok=True)

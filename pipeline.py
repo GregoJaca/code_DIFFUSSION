@@ -35,29 +35,38 @@ def visualize_classifications(
 
     classifications_plane = torch.load(classifications_plane_path)
 
+    os.makedirs(results_dir, exist_ok=True)
+    output_tensor_path = os.path.join(results_dir, "classification_plane.pt")
+    torch.save(classifications_plane, output_tensor_path)
+    print(f"Classification tensor saved to {output_tensor_path}")
+
     num_x, num_y = num_prompts_per_direction
 
     # Convert RGB colors to 0-1 range for matplotlib
     norm_colors = [(r/255, g/255, b/255) for r, g, b in colors]
     cmap = ListedColormap(norm_colors)
 
-    plt.figure(figsize=(num_x, num_y))
-    plt.imshow(classifications_plane.T, cmap=cmap, origin='lower', 
-               extent=[linspace_0.min(), linspace_0.max(), linspace_1.min(), linspace_1.max()])
-    
-    plt.xticks(linspace_0.tolist())
+    plt.figure(figsize=(max(num_x, 12), max(num_y, 12)))
+    plt.imshow(classifications_plane.T, cmap=cmap, origin='lower',
+               extent=[linspace_0.min(), linspace_0.max(), linspace_1.min(), linspace_1.max()],
+               interpolation='nearest')
+
+    plt.xticks(linspace_0.tolist(), rotation=45, ha="right")
     plt.yticks(linspace_1.tolist())
-    plt.xlabel("Direction 0")
-    plt.ylabel("Direction 1")
-    plt.title("Classification Plane Visualization")
-    
+
+    plt.xlabel("Direction 0", fontsize=14)
+    plt.ylabel("Direction 1", fontsize=14)
+    plt.title("Classification Plane Visualization", fontsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=12)
+
     # Create a colorbar with discrete values
     cbar = plt.colorbar(ticks=range(len(colors)))
-    cbar.set_label("Classification")
+    cbar.set_label("Classification", fontsize=12)
+    cbar.ax.tick_params(labelsize=10)
 
-    os.makedirs(results_dir, exist_ok=True)
     output_image_path = os.path.join(results_dir, "classification_plane_visualization.png")
-    plt.savefig(output_image_path)
+    plt.tight_layout()
+    plt.savefig(output_image_path, dpi=300)
     plt.close() # Close the plot to free memory
     print(f"Visualization saved to {output_image_path}")
 
@@ -152,7 +161,7 @@ def main():
     visualize_classifications(
         num_prompts_per_direction=tuple(args.num_prompts_per_direction),
         output_dir=f"{system_config.OUTPUT_DIR}/final_tensors",
-        results_dir=args.results_dir,
+        results_dir= f"{system_config.OUTPUT_DIR}/images",# args.results_dir,
         colors=system_config.CLASSIFICATION_COLORS,
         linspace_0=linspace_data["linspace_0"],
         linspace_1=linspace_data["linspace_1"],

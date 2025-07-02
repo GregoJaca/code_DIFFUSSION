@@ -65,13 +65,27 @@ This project provides a modular and configurable Python system for extracting in
 The process is a two-step pipeline: first generate inputs, then run the extraction.
 
 ### Step 1: Generate Input Noise
+There are three ways to generate input noise:
 
-Run the `generate_inputs.py` script to create the initial random noise tensors that will be the starting point for the diffusion process.
+1.  **`generate_inputs.py`**: Creates a set of independent random noise tensors.
+    ```bash
+    python generate_inputs.py --num_samples 10
+    ```
+    This creates 10 files (`noise_0000.pt`, etc.) in the `/inputs` directory.
 
-```bash
-python generate_inputs.py --num_samples 10
-```
-This will create 10 files (`noise_0000.pt`, `noise_0001.pt`, etc.) in the `/inputs` directory. You can adjust the number of samples in `config.py` or via the command-line argument.
+2.  **`generate_perturbed_prompts.py`**: Generates a "base" noise tensor and several "perturbed" versions by adding small amounts of noise to it. This is useful for studying the local stability of the diffusion process.
+    ```bash
+    python generate_perturbed_prompts.py --num_perturbations 5 --epsilon 500
+    ```
+
+3.  **`generate_plane_prompts.py`**: Creates a 2D grid (a "plane") of noise tensors. This is useful for visualizing the latent space in two dimensions. The plane is defined by a base noise tensor and two orthogonal direction vectors. You can now specify the center of this plane.
+    ```bash
+    # Generate a 5x5 grid centered at (0, 0)
+    python generate_plane_prompts.py --num_prompts_per_direction 5 5
+
+    # Generate a 10x10 grid centered at (2000.0, -1500.0)
+    python generate_plane_prompts.py --num_prompts_per_direction 10 10 --center_coords 2000.0 -1500.0
+    ```
 
 ### Step 2: Run the Extraction
 

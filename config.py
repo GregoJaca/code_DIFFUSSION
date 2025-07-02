@@ -70,7 +70,7 @@ class ModelConfig:
 class InferenceConfig:
     """Configuration for the denoising inference process."""
     BATCH_SIZE: int = 1
-    NUM_INFERENCE_STEPS: int = 100
+    NUM_INFERENCE_STEPS: int = 70
     GUIDANCE_SCALE: float = 7.5 # For guided diffusion, not used in DDPM
     FLATTEN_OUTPUT: bool = False # Flatten spatial dims to vectors
     EXTRACT_HIDDEN_STATES: bool = False # Whether to extract hidden states or just generate the final image
@@ -99,8 +99,9 @@ class DefaultConfig:
     """Default arguments for various scripts."""
     BASE_SEED: int = 420
     DIRECTION_SEEDS: tuple[int, int] = (100, 200)
-    NUM_PROMPTS_PER_DIRECTION: tuple[int, int] = (41, 25)
-    LEN_PER_DIRECTION: tuple[float, float] = (30000.0, 20000.0)
+    NUM_PROMPTS_PER_DIRECTION: tuple[int, int] = (25, 41)
+    LEN_PER_DIRECTION: tuple[float, float] = (2000.0, 3000.0)
+    CENTER_COORDS: tuple[float, float] = (-1000.0, -500.0)
     INPUTS_DIRECTORY: str = "./inputs"
     DEBUG: bool = False
     PERTURB_BASE_SEED: int = 42
