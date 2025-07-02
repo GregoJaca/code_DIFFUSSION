@@ -21,12 +21,20 @@ This project provides a modular and configurable Python system for extracting in
 │   ├── layer1/           # Trajectories from the first specified layer
 │   ├── last_layer/       # Trajectories from the last specified layer
 │   └── sequences/        # Full x_T to x_0 image sequences
-├── config.py             # Central configuration file for all parameters
-├── generate_inputs.py    # Script to create initial noise files
-├── generate_perturbed_inputs.py    # Script to create noise files which are small perturbations of one another
-├── extraction_system.py  # Core classes for model loading and state extraction
-├── main.py               # Main script to run the entire pipeline
-├── requirements.txt      # Python package dependencies
+├── classifier_model.py   # Defines the LeNet-5 model for classifying MNIST digits.
+├── classify.py           # Classifies generated tensors using a pretrained model.
+├── clean_input_output.sh # Deletes all files in the 'inputs' and 'outputs' directories.
+├── clean_output.sh       # Deletes all files in the 'outputs' directory.
+├── compare_tensors.py    # Compares all tensors in a directory to check for equality.
+├── config.py             # Central configuration file for all parameters and default arguments.
+├── extraction_system.py  # Core classes for model loading, state extraction, and running the denoising process.
+├── generate_inputs.py    # Script to create initial noise files.
+├── generate_perturbed_prompts.py # Script to create noise files which are small perturbations of one another.
+├── generate_plane_prompts.py # Generates a 2D plane of noise tensors for exploring the latent space.
+├── main.py               # Main script to run the entire extraction pipeline.
+├── pipeline.py           # Runs the full pipeline from data generation to classification and visualization.
+├── requirements.txt      # Python package dependencies.
+├── tensor_to_image.py    # Converts a tensor or a sequence of tensors into PNG images.
 └── README.md             # This file
 ```
 
@@ -96,11 +104,11 @@ python tensor_to_image.py --tensor-path "outputs/sequences/sample_0000_sequence.
 
 All key parameters can be modified in `config.py`:
 
--   **`system_config`**: Device (`cuda`/`cpu`), directories, and random seed.
--   **`generation_config`**: Number of samples to generate, image dimensions.
--   **`model_config`**:
-    -   `MODEL_ID`: The Hugging Face Hub ID of the model to use (e.g., `"aurent/ddpm-mnist"`).
-    -   `MODEL_LAYER_MAP`: **Crucial for model agnosticism**. Maps a model ID to the string names of its first and last convolutional layers. If you use a new model, inspect its architecture (`print(model)`) and add its layer names here.
--   **`inference_config`**: Default batch size, number of inference steps, and whether to flatten outputs.
+-   **`SystemConfig`**: Defines system-level settings like the device (`cuda` or `cpu`), input/output directories, and the global random seed. It also includes a list of colors for classification visualization.
+-   **`GenerationConfig`**: Holds parameters for generating initial noise tensors, such as the number of samples, image dimensions, and input channels.
+-   **`ModelConfig`**: Specifies the Hugging Face model ID to be used and, crucially, maps this ID to the names of the model's first and last convolutional layers, allowing for model-agnostic hooking.
+-   **`InferenceConfig`**: Contains settings for the denoising process, including batch size, number of inference steps, and whether to flatten hidden state outputs.
+-   **`ClassifierConfig`**: Provides configuration for the classification script, such as the default path to tensors and the location of the pretrained classifier model weights.
+-   **`DefaultConfig`**: Contains default arguments for various scripts, centralizing parameters for seeds, perturbation settings, and directory paths to ensure consistency and ease of modification.
 
 Command-line arguments provided to `main.py` will override the defaults set in `config.py`.
