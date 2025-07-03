@@ -29,7 +29,7 @@ def tensor_to_image(tensor_path: str, step: int, output_base_dir: str):
     # Load the tensor
     try:
         loaded_tensor = torch.load(tensor_path, map_location=torch.device('cpu'))
-        logging.info(f"Loaded tensor with shape: {loaded_tensor.shape}")
+        # logging.info(f"Loaded tensor with shape: {loaded_tensor.shape}")
     except Exception as e:
         logging.error(f"Failed to load or process tensor file: {e}")
         return
@@ -90,7 +90,7 @@ def tensor_to_image(tensor_path: str, step: int, output_base_dir: str):
     # Save the image
     try:
         save_image(image_tensor, output_path, format='png')
-        logging.info(f"Successfully saved image to: {output_path}")
+        # logging.info(f"Successfully saved image to: {output_path}")
     except Exception as e:
         logging.error(f"Failed to save image: {e}")
 
@@ -135,8 +135,8 @@ if __name__ == "__main__":
             for filename in os.listdir(args.folder_path):
                 if filename.endswith(".pt"):
                     full_path = os.path.join(args.folder_path, filename)
-                    logging.info(f"Processing tensor from folder: {full_path}")
+                    # logging.info(f"Processing tensor from folder: {full_path}")
                     tensor_to_image(full_path, args.step, args.output_base_dir)
                 else:
-                    logging.info(f"Skipping non-.pt file in folder: {filename}")
+                    # logging.info(f"Skipping non-.pt file in folder: {filename}")
 

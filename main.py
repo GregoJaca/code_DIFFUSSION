@@ -23,7 +23,7 @@ def setup_directories():
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "layer1"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "last_layer"), exist_ok=True)
     os.makedirs(os.path.join(system_config.OUTPUT_DIR, "final_tensors"), exist_ok=True)
-    logging.info("Output directories created.")
+    # logging.info("Output directories created.")
 
 def save_tensors(
     input_file_bases: List[str],
@@ -133,7 +133,7 @@ def main(args):
             logging.debug(f"Batch {i+1}: Any NaNs in noise_batch? {torch.isnan(noise_batch).any().item()}")
             logging.debug(f"Batch {i+1}: Any Infs in noise_batch? {torch.isinf(noise_batch).any().item()}")
 
-            logging.info(f"Processing batch {i+1}/{num_batches}...")
+            # logging.info(f"Processing batch {i+1}/{num_batches}...")
 
             start_mem = torch.cuda.memory_allocated(system_config.DEVICE) if system_config.DEVICE == "cuda" else 0
             batch_start_time = time.time()
@@ -146,7 +146,7 @@ def main(args):
                     flatten_output=args.flatten
                 )
                 save_tensors(input_file_bases, full_sequence, extracted_states)
-                logging.info(f"Saved results for batch {i+1}.")
+                # logging.info(f"Saved results for batch {i+1}.")
             else:
                 final_images = extractor.generate_final_image(
                     initial_noise=noise_batch,
@@ -158,7 +158,7 @@ def main(args):
                     img_path = os.path.join(system_config.OUTPUT_DIR, "final_tensors", f"{file_base}.pt")
                     torch.save(final_images[j], img_path)
                     logging.debug(f"saved {file_base}_final_tensor.pt")
-                logging.info(f"Saved final images for batch {i+1}.")
+                # logging.info(f"Saved final images for batch {i+1}.")
 
             pbar.update(len(batch_files))
 
